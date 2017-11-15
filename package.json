@@ -4,9 +4,13 @@
   "private": true,
   "author": "Lucas Pirola <lucaspirola@gmail.com>",
   "description": "A simple helpful robot for BONDE",
+  "scripts": {
+    "test": "ava scripts/**/*.spec.js"
+  },
   "dependencies": {
     "ascii-table": "0.0.9",
     "assert": "^1.4.1",
+    "ava": "^0.23.0",
     "coffee-script": "^1.12.7",
     "hubot": "^2.19.0",
     "hubot-auth": "^2.1.0",
