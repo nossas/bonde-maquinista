@@ -3,10 +3,15 @@
   "hubot-help",
   "hubot-google-images",
   "hubot-auth",
+  "hubot-newrelic",
+  "hubot-pomodoro",
+  "hubot-sendgrid",
+  "hubot-uptime-robot",
+  "hubot-voting",
+  "hubot-cron",
   "hubot-google-translate",
   "hubot-pugme",
   "hubot-maps",
   "hubot-redis-brain",
-  "hubot-rules",
-  "hubot-shipit"
+  "hubot-rules"
 ]
