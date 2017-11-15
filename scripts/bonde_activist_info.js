@@ -41,6 +41,18 @@ module.exports = async (robot) => {
     return res.send("Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS");
   });
   robot.respond(/buscar ativista (.*)/i, async (res) => {
+
+    var role, user;
+    role = 'support';
+    user = robot.brain.userForName(res.message.user.name);
+    if (user == null) {
+      return res.reply(`${name} does not exist`);
+    }
+    if (!robot.auth.hasRole(user, role)) {
+      res.reply(`Access Denied. You need role ${role} to perform this action.`);
+      return;
+    }
+
     var doorType;
     doorType = res.match[1];
     if (validateEmail(doorType)) {
