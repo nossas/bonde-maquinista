@@ -1,31 +1,96 @@
 //  Description:
-//    <description of the scripts functionality>
+//    Search for details about activist donations
 //  Dependencies:
 //    "<module name>": "<module version>"
 //  Configuration:
-//    LIST_OF_ENV_VARS_TO_SET
+//    DATABASE_URL
 //  Commands:
-//    hubot <trigger> - <what the respond trigger does>
-//    <trigger> - <what the hear trigger does>
+//    hubot buscar ativista <email> - <answer with information about subscription>
 //  Notes:
-//    <optional notes required for the script>
+//    Command available only to authorized users
 //  Author:
 //    lpirola
 //   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
-module.exports = function(robot) {
+const { Pool, Client } = require('pg')
+const assert = require('assert')
+const Table = require('cli-table')
+
+assert(process.env.DATABASE_URL, '`DATABASE_URL` not set')
+
+const connectionString = process.env.DATABASE_URL
+
+const pool = new Pool({
+  connectionString: connectionString,
+})
+
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle client', err)
+  process.exit(-1)
+})
+
+const validateEmail = (email) => {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
+
+module.exports = async (robot) => {
+  const client = await pool.connect()
   var annoyIntervalId, answer, enterReplies, leaveReplies, lulz;
   robot.hear(/badger/i, function(res) {
     return res.send("Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS");
   });
-  robot.respond(/open the (.*) doors/i, function(res) {
+  robot.respond(/buscar ativista (.*)/i, async (res) => {
     var doorType;
     doorType = res.match[1];
-    if (doorType === "pod bay") {
-      return res.reply("I'm afraid I can't let you do that.");
+    if (validateEmail(doorType)) {
+      res.reply("E-mail válido, busca iniciada...");
+
+      const text = 'select s.* from donations d right join subscriptions s on d.local_subscription_id = s.id where d.email ~ $1 group by d.local_subscription_id,s.id'
+      const values = [doorType]
+
+      const table = new Table({
+        head: [
+          'id',
+          'widget_id',
+          'activist_id',
+          'community_id',
+          'status',
+          'period',
+          'amount',
+          // 'created_at',
+          // 'updated_at',
+          'payment_method',
+          'token'
+          // 'mailchimp_syncronization_at',
+          // 'mailchimp_syncronization_error_reason'
+        ]
+      });
+      try {
+        const query = await client.query(text, values)
+
+        query.rows.map((v) => table.push([v.id,
+          v.widget_id,
+          v.activist_id,
+          v.community_id,
+          v.status,
+          v.period,
+          v.amount,
+          // v.created_at,
+          // v.updated_at,
+          v.payment_method,
+          v.token
+        ]))
+        // console.log(table.toString())
+        return res.reply("\n" + table.toString());
+      } catch(err) {
+        robot.logger.error(err.stack)
+        console.log(err.stack)
+      }
     } else {
-      return res.reply(`Opening ${doorType} doors`);
+      return res.reply("E-mail inválido, tente novamente...");
     }
+
   });
   robot.hear(/I like pie/i, function(res) {
     return res.emote("makes a freshly baked pie");
