@@ -14,7 +14,7 @@
 
 const { Pool, Client } = require('pg')
 const assert = require('assert')
-const Table = require('cli-table')
+var AsciiTable = require('ascii-table')
 
 assert(process.env.DATABASE_URL, '`DATABASE_URL` not set')
 
@@ -49,8 +49,8 @@ module.exports = async (robot) => {
       const text = 'select s.* from donations d right join subscriptions s on d.local_subscription_id = s.id where d.email ~ $1 group by d.local_subscription_id,s.id'
       const values = [doorType]
 
-      const table = new Table({
-        head: [
+      const table = new AsciiTable('Lista de doações recorrentes')
+      table.setHeading(
           'id',
           'widget_id',
           'activist_id',
@@ -64,23 +64,23 @@ module.exports = async (robot) => {
           'token'
           // 'mailchimp_syncronization_at',
           // 'mailchimp_syncronization_error_reason'
-        ]
-      });
+      )
       try {
         const query = await client.query(text, values)
 
-        query.rows.map((v) => table.push([v.id,
+        query.rows.map((v) => table.addRow(
+          v.id,
           v.widget_id,
           v.activist_id,
           v.community_id,
           v.status,
           v.period,
           v.amount,
-          // v.created_at,
-          // v.updated_at,
+          // v.created_at: // v.created_at,
+          // v.updated_at: // v.updated_at,
           v.payment_method,
           v.token
-        ]))
+        ))
         // console.log(table.toString())
         return res.reply("\n" + table.toString());
       } catch(err) {
