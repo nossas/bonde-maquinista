@@ -9,7 +9,7 @@ pipeline:
 
   publish:
     image: plugins/docker
-    repo: nossas/bonde-client
+    repo: nossas/bonde-maquinista
     secrets: [ docker_username, docker_password ]
     tags:
       - ${DRONE_BRANCH}
