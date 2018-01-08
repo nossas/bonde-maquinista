@@ -56,11 +56,6 @@ module.exports = async (robot) => {
     var doorType;
     doorType = res.match[1];
     // if (validateEmail(doorType)) {
-      res.reply(`
-_||__|   |  ______   ______
-(        | |      | |      |
-/-()---() ~ ()--() ~ ()--()
-`);
 
       const text = `
       SELECT
@@ -70,7 +65,8 @@ _||__|   |  ______   ______
       d.widget_id,
       d.created_at,
       d.updated_at,
-      d.token,
+      s.token,
+      s.status,
       d.payment_method,
       d.amount,
       d.email,
@@ -103,45 +99,60 @@ _||__|   |  ______   ______
       left join blocks b on w.block_id = b.id
       left join mobilizations m on b.mobilization_id = m.id
       left join communities c on m.community_id = c.id
+      left join subscriptions s on d.local_subscription_id = s.id
   where d.email ~ $1
 `
       const values = [doorType]
 
       try {
         const query = await client.query(text, values)
+        const sizeResults = query.rows.length
+        if ( sizeResults > 0) {
+          res.reply(
+            "```_||__|   |  ______________________   ______" +
+            "(        | | " + sizeResults + " REGISTROS ENCONTRADOS| |      |" +
+            "/-()---() ~ ()---------------------() ~ ()--()```");
+          query.rows.map((v) => {
+            const table = new AsciiTable(v.email + ' - ' + v.community + ' - ' + v.mobilization)
+            table.addRow('transaction_id', v.transaction_id);
+            table.addRow('transaction_status', v.transaction_status);
+            table.addRow('payment_method', v.payment_method);
+            table.addRow('amount', v.amount/100);
+            if (v.subscription) {
+              table.addRow('is_subscription', v.subscription);
+              table.addRow('subscription_id', v.subscription_id);
+              table.addRow('subscription_status', v.status);
+              table.addRow('subscription_token', v.token);
+              table.addRow('subscription_period', v.period);
+              table.addRow('subscription_edit', `https://app.bonde.org/subscriptions/${v.subscription_id}/edit?token=${v.token}`);
+            }
+            table.addRow('donation_id', v.donation_id);
+            table.addRow('widget_id', v.widget_id);
+            table.addRow('activist_id', v.activist_id);
+            table.addRow('created_at', v.created_at);
+            table.addRow('updated_at', v.updated_at);
+            // table.addRow('synchronized', d.synchronized);
+            // table.addRow('local_subscription_id', d.local_subscription_id);
+            // table.addRow('mailchimp_syncronization_at', d.mailchimp_syncronization_at);
+            // table.addRow('mailchimp_syncronization_error_reason', d.mailchimp_syncronization_error_reason);
 
-        query.rows.map((v) => {
-          const table = new AsciiTable(v.email + ' - ' + v.community + ' - ' + v.mobilization)
-          table.addRow('transaction_id', v.transaction_id);
-          table.addRow('transaction_status', v.transaction_status);
-          table.addRow('payment_method', v.payment_method);
-          table.addRow('amount', v.amount/100);
+            res.reply("```" + table.toString() + "```");
+          })
+        } else {
+          res.reply(
+            "```_||__|   |  _____________________   ______" +
+            "(        | | 0 REGISTROS ENCONTRADOS| |      |" +
+            "/-()---() ~ ()--------------------() ~ ()--()```");
+        }
 
-          table.addRow('subscription', v.subscription);
-          table.addRow('token', v.token);
-          table.addRow('subscription_id', v.subscription_id);
-          table.addRow('period', v.period);
-
-          table.addRow('donation_id', v.donation_id);
-          table.addRow('widget_id', v.widget_id);
-          table.addRow('activist_id', v.activist_id);
-          table.addRow('created_at', v.created_at);
-          table.addRow('updated_at', v.updated_at);
-          // table.addRow('synchronized', d.synchronized);
-          // table.addRow('local_subscription_id', d.local_subscription_id);
-          // table.addRow('mailchimp_syncronization_at', d.mailchimp_syncronization_at);
-          // table.addRow('mailchimp_syncronization_error_reason', d.mailchimp_syncronization_error_reason);
-
-          res.reply("```" + table.toString() + "```");
-        })
-        return true
-      } catch(err) {
-        robot.logger.error(err.stack)
-        console.log(err.stack)
-      }
-    // } else {
-    //   return res.reply("E-mail inválido, tente novamente...");
-    // }
+      return true
+    } catch(err) {
+      robot.logger.error(err.stack)
+      console.log(err.stack)
+    }
+  // } else {
+  //   return res.reply("E-mail inválido, tente novamente...");
+  // }
   });
   robot.hear(/I like pie/i, function(res) {
     return res.emote("makes a freshly baked pie");
