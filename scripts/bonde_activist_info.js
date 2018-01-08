@@ -109,8 +109,8 @@ module.exports = async (robot) => {
         const sizeResults = query.rows.length
         if ( sizeResults > 0) {
           res.reply(
-            "```_||__|   |  ______________________   ______" +
-            "(        | | " + sizeResults + " REGISTROS ENCONTRADOS| |      |" +
+            "```_||__|   |  ______________________   ______\n" +
+            "(        | | " + sizeResults + " REGISTROS ENCONTRADOS| |      |\n" +
             "/-()---() ~ ()---------------------() ~ ()--()```");
           query.rows.map((v) => {
             const table = new AsciiTable(v.email + ' - ' + v.community + ' - ' + v.mobilization)
@@ -140,8 +140,8 @@ module.exports = async (robot) => {
           })
         } else {
           res.reply(
-            "```_||__|   |  _____________________   ______" +
-            "(        | | 0 REGISTROS ENCONTRADOS| |      |" +
+            "```_||__|   |  _____________________   ______\n" +
+            "(        | | 0 REGISTROS ENCONTRADOS| |      |\n" +
             "/-()---() ~ ()--------------------() ~ ()--()```");
         }
 
