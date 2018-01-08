@@ -12,7 +12,7 @@
 //    lpirola
 //   These are from the scripting documentation: https://github.com/github/hubot/blob/master/docs/scripting.md
 
-const { Pool, Client } = require('pg')
+const { Pool } = require('pg')
 const assert = require('assert')
 var AsciiTable = require('ascii-table')
 
@@ -42,67 +42,106 @@ module.exports = async (robot) => {
   });
   robot.respond(/buscar ativista (.*)/i, async (res) => {
 
-    var role, user;
-    role = 'support';
-    user = robot.brain.userForName(res.message.user.name);
-    if (user == null) {
-      return res.reply(`${name} does not exist`);
-    }
-    if (!robot.auth.hasRole(user, role)) {
-      res.reply(`Access Denied. You need role ${role} to perform this action.`);
-      return;
-    }
+    // var role, user;
+    // role = 'support';
+    // user = robot.brain.userForName(res.message.user.name);
+    // if (user == null) {
+    //   return res.reply(`${name} does not exist`);
+    // }
+    // if (!robot.auth.hasRole(user, role)) {
+    //   res.reply(`Access Denied. You need role ${role} to perform this action.`);
+    //   return;
+    // }
 
     var doorType;
     doorType = res.match[1];
-    if (validateEmail(doorType)) {
-      res.reply("E-mail válido, busca iniciada...");
+    // if (validateEmail(doorType)) {
+      res.reply(`
+_||__|   |  ______   ______
+(        | |      | |      |
+/-()---() ~ ()--() ~ ()--()
+`);
 
-      const text = 'select s.* from donations d right join subscriptions s on d.local_subscription_id = s.id where d.email ~ $1 group by d.local_subscription_id,s.id'
+      const text = `
+      SELECT
+      c.name as community,
+      m.name as mobilization,
+      d.id as donation_id,
+      d.widget_id,
+      d.created_at,
+      d.updated_at,
+      d.token,
+      d.payment_method,
+      d.amount,
+      d.email,
+      d.card_hash,
+      d.customer,
+      d.skip,
+      d.transaction_id,
+      d.transaction_status,
+      d.subscription,
+      d.credit_card,
+      d.activist_id,
+      d.subscription_id,
+      d.period,
+      d.plan_id,
+      d.parent_id,
+      d.payables,
+      d.gateway_data,
+      d.payable_transfer_id,
+      d.old_synch,
+      d.converted_from,
+      d.synchronized,
+      d.local_subscription_id,
+      d.mailchimp_syncronization_at,
+      d.mailchimp_syncronization_error_reason,
+      d.checkout_data,
+      d.cached_community_id
+  from
+      donations d
+      left join widgets w on d.widget_id = w.id
+      left join blocks b on w.block_id = b.id
+      left join mobilizations m on b.mobilization_id = m.id
+      left join communities c on m.community_id = c.id
+  where d.email ~ $1
+`
       const values = [doorType]
 
-      const table = new AsciiTable('Lista de doações recorrentes')
-      table.setHeading(
-          'id',
-          'widget_id',
-          'activist_id',
-          'community_id',
-          'status',
-          'period',
-          'amount',
-          // 'created_at',
-          // 'updated_at',
-          'payment_method',
-          'token'
-          // 'mailchimp_syncronization_at',
-          // 'mailchimp_syncronization_error_reason'
-      )
       try {
         const query = await client.query(text, values)
 
-        query.rows.map((v) => table.addRow(
-          v.id,
-          v.widget_id,
-          v.activist_id,
-          v.community_id,
-          v.status,
-          v.period,
-          v.amount,
-          // v.created_at: // v.created_at,
-          // v.updated_at: // v.updated_at,
-          v.payment_method,
-          v.token
-        ))
-        // console.log(table.toString())
-        return res.reply("\n" + table.toString());
+        query.rows.map((v) => {
+          const table = new AsciiTable(v.email + ' - ' + v.community + ' - ' + v.mobilization)
+          table.addRow('transaction_id', v.transaction_id);
+          table.addRow('transaction_status', v.transaction_status);
+          table.addRow('payment_method', v.payment_method);
+          table.addRow('amount', v.amount/100);
+
+          table.addRow('subscription', v.subscription);
+          table.addRow('token', v.token);
+          table.addRow('subscription_id', v.subscription_id);
+          table.addRow('period', v.period);
+
+          table.addRow('donation_id', v.donation_id);
+          table.addRow('widget_id', v.widget_id);
+          table.addRow('activist_id', v.activist_id);
+          table.addRow('created_at', v.created_at);
+          table.addRow('updated_at', v.updated_at);
+          // table.addRow('synchronized', d.synchronized);
+          // table.addRow('local_subscription_id', d.local_subscription_id);
+          // table.addRow('mailchimp_syncronization_at', d.mailchimp_syncronization_at);
+          // table.addRow('mailchimp_syncronization_error_reason', d.mailchimp_syncronization_error_reason);
+
+          res.reply("```" + table.toString() + "```");
+        })
+        return true
       } catch(err) {
         robot.logger.error(err.stack)
         console.log(err.stack)
       }
-    } else {
-      return res.reply("E-mail inválido, tente novamente...");
-    }
-
+    // } else {
+    //   return res.reply("E-mail inválido, tente novamente...");
+    // }
   });
   robot.hear(/I like pie/i, function(res) {
     return res.emote("makes a freshly baked pie");
