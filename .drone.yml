@@ -21,7 +21,7 @@ pipeline:
     image: peloton/drone-rancher
     group: concurrent
     url: http://cluster.bonde.org
-    service: production/bonde-maquinista
+    service: partners/bonde-maquinista
     docker_image: nossas/bonde-maquinista:${DRONE_BRANCH}
     timeout: 360
     confirm: true
