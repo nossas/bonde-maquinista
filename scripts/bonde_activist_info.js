@@ -78,7 +78,6 @@ module.exports = async (robot) => {
       d.subscription,
       d.credit_card,
       d.activist_id,
-      d.subscription_id,
       d.period,
       d.plan_id,
       d.parent_id,
@@ -120,11 +119,11 @@ module.exports = async (robot) => {
             table.addRow('amount', v.amount/100);
             if (v.subscription) {
               table.addRow('is_subscription', v.subscription);
-              table.addRow('subscription_id', v.subscription_id);
+              table.addRow('subscription_id', v.local_subscription_id);
               table.addRow('subscription_status', v.status);
               table.addRow('subscription_token', v.token);
               table.addRow('subscription_period', v.period);
-              table.addRow('subscription_edit', `https://app.bonde.org/subscriptions/${v.subscription_id}/edit?token=${v.token}`);
+              table.addRow('subscription_edit', `https://app.bonde.org/subscriptions/${v.local_subscription_id}/edit?token=${v.token}`);
             }
             table.addRow('donation_id', v.donation_id);
             table.addRow('widget_id', v.widget_id);
