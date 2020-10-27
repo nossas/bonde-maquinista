@@ -20,7 +20,6 @@
     "hubot-google-translate": "^0.2.1",
     "hubot-help": "^0.2.2",
     "hubot-maps": "0.0.3",
-    "hubot-newrelic": "^0.1.4",
     "hubot-pomodoro": "^1.1.5",
     "hubot-pugme": "^0.1.1",
     "hubot-redis-brain": "0.0.4",
