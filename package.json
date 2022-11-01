@@ -20,7 +20,7 @@
     "hubot-google-translate": "^0.2.1",
     "hubot-help": "^0.2.2",
     "hubot-maps": "0.0.3",
-    "hubot-pomodoro": "^1.1.5",
+    "hubot-pomodoro": "^2.0.3",
     "hubot-pugme": "^0.1.1",
     "hubot-redis-brain": "0.0.4",
     "hubot-rules": "^0.1.2",
